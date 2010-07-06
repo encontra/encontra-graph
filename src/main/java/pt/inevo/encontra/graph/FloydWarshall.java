@@ -28,7 +28,7 @@ public class FloydWarshall {
 	 * @param nod
 	 * @param graph
 	 */
-	public void initialize(Collection nod, Graph graph) {
+	public void initialize(List nod, Graph graph) {
 		g = graph;
 		Iterator it = nod.iterator();
 		while (it.hasNext()) {

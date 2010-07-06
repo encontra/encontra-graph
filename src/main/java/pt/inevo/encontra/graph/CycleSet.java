@@ -35,7 +35,7 @@ public class CycleSet extends ArrayList<Cycle>{
 		GraphViewer viewer=new GraphViewer(graph);
 		viewer.setVertexDataToShow("point");
 		viewer.setEdgeDataToShow(userDataKey);
-		viewer.Show();
+		//viewer.Show();
 		//viewer.waitUntilClosed();
 		_log.info("Running FloyWarshall...");
 		floydWarshall=new FloydWarshall();
@@ -60,11 +60,11 @@ public class CycleSet extends ArrayList<Cycle>{
 		GraphNode other1;
 		GraphNode other2;
 		boolean connected=false; // Indicates if two nodes are interconnected
-		int vertexCount=g.numVertices();
+		//int vertexCount=g.numVertices();
 		boolean removing=true; // flag to stop the loop
 		while(removing){
 			removing=false;
-			for(int i=0;i<vertexCount;i++){
+			for(int i=0;i<g.numVertices();i++){
 				GraphNode n=(GraphNode)g.getVerticesList().get(i);
 				List<GraphNode> adjList=n.getAdjList();
 				int nAdj=adjList.size();
@@ -110,7 +110,7 @@ public class CycleSet extends ArrayList<Cycle>{
 					if(data1!=null){
 						ArrayList<Integer> arr_data1=(ArrayList<Integer>)data1;
 						// other1 is at the end - lets reverse this data
-						if( arr_data1.get(arr_data1.size()-1).intValue()==other1.getId()){
+						if(arr_data1.get(arr_data1.size() - 1) ==other1.getId()){
 							Collections.reverse(arr_data1);
 						}
 						arr_data1.remove(arr_data1.size()-1); // remove last one - should = n
