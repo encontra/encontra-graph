@@ -35,7 +35,7 @@ public class CycleSet extends ArrayList<Cycle>{
 		GraphViewer viewer=new GraphViewer(graph);
 		viewer.setVertexDataToShow("point");
 		viewer.setEdgeDataToShow(userDataKey);
-		//viewer.Show();
+		viewer.Show();
 		//viewer.waitUntilClosed();
 		_log.info("Running FloyWarshall...");
 		floydWarshall=new FloydWarshall();
