@@ -32,10 +32,13 @@ public class CycleSet extends ArrayList<Cycle>{
 		//viewer.waitUntilClosed();
 		_log.info("Simplifying graph...");
 		Simplify(graph);
-		GraphViewer viewer=new GraphViewer(graph);
+
+        /*
+        GraphViewer viewer=new GraphViewer(graph);
 		viewer.setVertexDataToShow("point");
 		viewer.setEdgeDataToShow(userDataKey);
-		viewer.Show();
+		viewer.Show();*/
+        
 		//viewer.waitUntilClosed();
 		_log.info("Running FloyWarshall...");
 		floydWarshall=new FloydWarshall();
