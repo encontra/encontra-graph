@@ -2,6 +2,7 @@ package pt.inevo.encontra.graph;
 
 import edu.uci.ics.jung.graph.Edge;
 import edu.uci.ics.jung.graph.impl.SparseVertex;
+import pt.inevo.encontra.common.distance.HasDistance;
 
 import java.util.ArrayList;
 import java.util.List;
