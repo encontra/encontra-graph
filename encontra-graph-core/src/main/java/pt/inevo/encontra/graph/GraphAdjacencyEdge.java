@@ -1,23 +1,15 @@
 package pt.inevo.encontra.graph;
 
-import edu.uci.ics.jung.graph.impl.UndirectedSparseEdge;
+import edu.uci.ics.jung.graph.util.EdgeType;
 
+public class GraphAdjacencyEdge extends GraphEdge {
 
-public class GraphAdjacencyEdge extends UndirectedSparseEdge implements GraphEdge { 
+    public GraphAdjacencyEdge(GraphNode from, GraphNode to) {
+        super(from, to);
+    }
 
-	public GraphAdjacencyEdge(GraphNode from, GraphNode to) {
-		super(from, to);
-	}
-	
-	public int getId()
-	{
-		return id;
-	}
-	
-	public void setId(int pid)
-	{
-		id=pid;
-	}
-	
-	
+    @Override
+    public EdgeType getType() {
+        return EdgeType.UNDIRECTED;
+    }
 }

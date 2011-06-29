@@ -1,9 +1,5 @@
 package pt.inevo.encontra.graph;
 
-import edu.uci.ics.jung.utils.UserData;
-import pt.inevo.encontra.graph.swing.GraphViewer;
-
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -67,7 +63,7 @@ public class CycleSet extends ArrayList<Cycle>{
 		boolean removing=true; // flag to stop the loop
 		while(removing){
 			removing=false;
-			for(int i=0;i<g.numVertices();i++){
+			for(int i=0;i<g.getVertexCount();i++){
 				GraphNode n=(GraphNode)g.getVerticesList().get(i);
 				List<GraphNode> adjList=n.getAdjList();
 				int nAdj=adjList.size();
@@ -96,9 +92,9 @@ public class CycleSet extends ArrayList<Cycle>{
 					GraphAdjacencyEdge edge=other1.addAdjLink(other2);
 					
 					//Object data=edge.getUserDatum(userDataKey);
-					ArrayList<Integer> removedVertexes;
+					ArrayList<Long> removedVertexes;
 					//if(data==null) {
-					removedVertexes=new ArrayList<Integer>();
+					removedVertexes=new ArrayList<Long>();
 					//} else {
 					//	removedVertexes=(LinkedHashSet<Integer>) data;
 					//}
@@ -111,7 +107,7 @@ public class CycleSet extends ArrayList<Cycle>{
 					
 					
 					if(data1!=null){
-						ArrayList<Integer> arr_data1=(ArrayList<Integer>)data1;
+						ArrayList<Long> arr_data1=(ArrayList<Long>)data1;
 						// other1 is at the end - lets reverse this data
 						if(arr_data1.get(arr_data1.size() - 1) ==other1.getId()){
 							Collections.reverse(arr_data1);
@@ -126,7 +122,7 @@ public class CycleSet extends ArrayList<Cycle>{
 					removedVertexes.add(n.getId());
 					
 					if(data2!=null){
-						ArrayList<Integer> arr_data2=(ArrayList<Integer>)data2;
+						ArrayList<Long> arr_data2=(ArrayList<Long>)data2;
 				
 						// other2 is at the end - lets reverse this data
 						if( arr_data2.get(0).intValue()==other2.getId()){
@@ -137,8 +133,10 @@ public class CycleSet extends ArrayList<Cycle>{
 					} else {
 						removedVertexes.add(other2.getId());
 					}
-					
-					edge.setUserDatum(userDataKey, removedVertexes, UserData.SHARED);
+
+                    // TODO removed the UserData.SHARED
+//					edge.setUserDatum(userDataKey, removedVertexes, UserData.SHARED);
+					edge.setUserDatum(userDataKey, removedVertexes);
 					//other2.addAdjLink(other1);
 					
 					/* Approach 2
@@ -169,17 +167,17 @@ public class CycleSet extends ArrayList<Cycle>{
 	// Add missing vertexes to cycles
 	private void UpdateToFullCycles(){
 		for(Cycle c:this){
-			int startId=c.GetVertex(0);
+			Long startId=c.GetVertex(0);
 			// The last vertex is the first one to close the cycle!
 			for (int j=1; j<c.GetVertexCount();j++){
-				int endId=c.GetVertex(j);
+				Long endId=c.GetVertex(j);
 				GraphNode startNode=graph.findNode(startId);
 				GraphNode endNode=graph.findNode(endId);
 				GraphAdjacencyEdge edge=startNode.getAdjacencyTo(endNode);
 				if(edge!=null){
 					Object data=edge.getUserDatum(userDataKey);
 					if(data!=null) {
-						ArrayList<Integer> removedVertexes=(ArrayList<Integer>) data;
+						ArrayList<Long> removedVertexes=(ArrayList<Long>) data;
 						if(removedVertexes.get(0)!=startId) {// We've got this in reverse order
 							Collections.reverse(removedVertexes);
 						}
@@ -203,25 +201,25 @@ public class CycleSet extends ArrayList<Cycle>{
 		int v, x, y;
 
 		// visit all vertices on the graph
-		for(v=0; v<graph.numVertices() ;v++) { //&& !PolygonDetector::WasInterrupted()
+		for(v=0; v<graph.getVertexCount() ;v++) { //&& !PolygonDetector::WasInterrupted()
 			//YIELD_CONTROL();
-			for(x=v+1; x<graph.numVertices() ;x++) { // && !PolygonDetector::WasInterrupted()
+			for(x=v+1; x<graph.getVertexCount() ;x++) { // && !PolygonDetector::WasInterrupted()
 				path_vx = floydWarshall.GetShortestPath(v,x);
 				//YIELD_CONTROL();
 				
-				for (y=x+1; y<graph.numVertices(); y++){ // && !PolygonDetector::WasInterrupted()						
+				for (y=x+1; y<graph.getVertexCount(); y++){ // && !PolygonDetector::WasInterrupted()
 					path_vy = floydWarshall.GetShortestPath(v,y);
 					//YIELD_CONTROL();			
 
 					// if paths exists and points x and y are adjacent
 					if (path_vx!=null && path_vy!=null && ( (GraphNode) graph.getVerticesList().get(x)).isAdjentTo((GraphNode) graph.getVerticesList().get(y))) {
-						int v_id=( (GraphNode) graph.getVerticesList().get(v)).getId();
+						Long v_id=( (GraphNode) graph.getVerticesList().get(v)).getId();
 						boolean only=IsOnlyCommonPointInPaths(v_id, path_vx, path_vy);
 						boolean tierman=IsTiermanCompliant( (GraphNode) graph.getVerticesList().get(v), path_vx, path_vy);
 						if (IsOnlyCommonPointInPaths(v_id, path_vx, path_vy) &&
 							IsTiermanCompliant( (GraphNode) graph.getVerticesList().get(v), path_vx, path_vy)){												
-							ArrayList<Integer> ids_path_vx=new ArrayList<Integer>();
-							ArrayList<Integer> ids_path_vy=new ArrayList<Integer>();
+							ArrayList<Long> ids_path_vx=new ArrayList<Long>();
+							ArrayList<Long> ids_path_vy=new ArrayList<Long>();
 							for(GraphNode g:path_vx)
 								ids_path_vx.add(g.getId());
 							for(GraphNode g:path_vy)
@@ -290,10 +288,10 @@ public class CycleSet extends ArrayList<Cycle>{
 		return true;
 	}
 
-	private boolean IsOnlyCommonPointInPaths(int v, List<GraphNode> p1, List<GraphNode> p2) {
+	private boolean IsOnlyCommonPointInPaths(Long v, List<GraphNode> p1, List<GraphNode> p2) {
 		int i, j;
-		int item_p1;
-		int item_p2;
+		Long item_p1;
+		Long item_p2;
 		boolean v_exists_in_p1 = false;
 		boolean v_exists_in_p2 = false;
 

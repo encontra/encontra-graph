@@ -1,21 +1,16 @@
 package pt.inevo.encontra.graph;
 
-import edu.uci.ics.jung.graph.impl.DirectedSparseEdge;
+import edu.uci.ics.jung.graph.util.EdgeType;
 
 
-public class GraphInclusionEdge extends DirectedSparseEdge{
+public class GraphInclusionEdge extends GraphEdge {
 
 	public GraphInclusionEdge(GraphNode from, GraphNode to) {
 		super(from, to);
 	}
 
-	public int getId()
-	{
-		return id;
-	}
-	
-	public void setId(int pid)
-	{
-		id=pid;
-	}
+    @Override
+    public EdgeType getType() {
+        return EdgeType.DIRECTED;
+    }
 }

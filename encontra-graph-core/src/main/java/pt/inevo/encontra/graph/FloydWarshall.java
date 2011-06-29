@@ -147,7 +147,7 @@ public class FloydWarshall {
 			for (int j = 0; j < ((List) nodes.get(k)).size() - 1; j++) {
 				GraphNode node1 = ((GraphNode) ((List) nodes.get(k)).get(j));
 				GraphNode node2 = ((GraphNode) ((List) nodes.get(k)).get(j + 1));
-				GraphEdge edge = (GraphEdge) node1.findEdge(node2);
+				GraphEdge edge = (GraphEdge) g.findEdge(node1, node2);
 				edges.add(edge);
 			}
 			ret.add(edges);
@@ -159,7 +159,6 @@ public class FloydWarshall {
 	 * Recursive function that takes the predecessor matrix, pred, and builds the path from i to j.
 	 * @param i
 	 * @param j
-	 * @param ret
 	 * @return
 	 */
 	public List <GraphNode>print_path(int i, int j) {

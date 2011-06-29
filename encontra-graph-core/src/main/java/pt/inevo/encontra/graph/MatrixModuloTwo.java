@@ -2,7 +2,6 @@ package pt.inevo.encontra.graph;
 
 import cern.colt.matrix.ObjectMatrix1D;
 import cern.colt.matrix.impl.DenseObjectMatrix2D;
-import cern.colt.matrix.impl.SparseObjectMatrix2D;
 
 @SuppressWarnings("serial")
 public class MatrixModuloTwo extends DenseObjectMatrix2D{
@@ -58,8 +57,8 @@ public class MatrixModuloTwo extends DenseObjectMatrix2D{
 
 	/***
 	* @desc swaps the matrix row <row_a> with row <row_b>
-	* @param size_t row_a indicates the number of one row  
-	* @param size_t row_b indicates the number of other row  
+	* @param row_a indicates the number of one row
+	* @param row_b indicates the number of other row
 	*/
 	void SwapMatrixRows(int row_a, int row_b)
 	{

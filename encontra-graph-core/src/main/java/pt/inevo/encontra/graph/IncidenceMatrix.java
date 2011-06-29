@@ -33,13 +33,13 @@ public class IncidenceMatrix {
 
 		boolean independent_cycle = true;
 		int offset = _independent_cycle_count*(_edge_count);
-		int edge=-1;
+		Long edge=-1l;
 
 		// add cycle to matrix
 		for (int i=0; i<c.GetEdgeCount();i++){
 			edge = c.GetEdge(i);
 
-			_p_incidence_matrix.setByOffset(offset+edge, new Short((short) 0x1) );		
+			_p_incidence_matrix.setByOffset(new Long(offset+edge).intValue(), new Short((short) 0x1) );
 		}
 		_independent_cycle_count++;
 		
@@ -69,12 +69,12 @@ public class IncidenceMatrix {
 	*/
 	void AddCycleToEdgePool(Cycle cycle)
 	{
-		int current_vertex, first_vertex, previous_vertex=0;
+		Long current_vertex, first_vertex, previous_vertex=0l;
 		boolean first = true;
-		int edge_number;
+		Long edge_number;
 
-		for (int i=0; i<cycle.GetVertexCount();i++) {		
-			current_vertex = cycle.GetVertex(i);
+		for (Long i=0l; i<cycle.GetVertexCount();i++) {
+			current_vertex = new Long(cycle.GetVertex(i.intValue()));
 
 			// in case this is not the frst vertex, finds the edge number
 			// and adds it to the edge list in cycle
@@ -101,24 +101,27 @@ public class IncidenceMatrix {
 	/***
 	* @return the edge number of given pair of vertices
 	*/
-	int GetEdgeNumber(Cycle cycle,int vertex_a, int vertex_b)
+	Long GetEdgeNumber(Cycle cycle, Long vertex_a, Long vertex_b)
 	{
 		GraphAdjacencyEdge e;
 
-		GraphNode node_a=cycle._graph.findNode(vertex_a);
-		GraphNode node_b=cycle._graph.findNode(vertex_b);
+		GraphNode node_a= cycle.getGraph().findNode(vertex_a);
+		GraphNode node_b= cycle.getGraph().findNode(vertex_b);
 		
 		for (int i=0; i< _edge_pool.size();i++){
 			e = _edge_pool.get(i);
-			if (e.isIncident(node_a) && e.isIncident(node_b))
+//            if (e.isIncident(node_a) && e.isIncident(node_b))
+//				return e.getId();
+
+            if (cycle.getGraph().isIncident(node_a, e) && cycle.getGraph().isIncident(node_b, e))
 				return e.getId();
 		}
 
 		// if arrives here, there are no such edge in edge pool
 		// so we must create a new edge
 		
-		e = new GraphAdjacencyEdge(cycle._graph.findNode(vertex_a), cycle._graph.findNode(vertex_b));	
-		e.setId(_edge_count++);
+		e = new GraphAdjacencyEdge(cycle.getGraph().findNode(vertex_a), cycle.getGraph().findNode(vertex_b));
+		e.setId(new Long(_edge_count++));
 		// and add it to the edge pool
 		_edge_pool.add(e);
 
