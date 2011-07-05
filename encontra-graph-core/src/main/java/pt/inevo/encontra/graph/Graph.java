@@ -11,6 +11,7 @@ import pt.inevo.encontra.storage.IEntity;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 
 public class Graph<V extends GraphNode, E extends GraphEdge> extends SparseGraph<V, E> implements IEntity<Long> {
@@ -27,7 +28,7 @@ public class Graph<V extends GraphNode, E extends GraphEdge> extends SparseGraph
     public static int MIN_NODES = 2;    //!< We don't compute descriptors for subgraphs with less then MIN_NODES
     public static int MAXLEVEL = 10;    //!< Maximum depth to calculate the adjacency for.
 
-    private List<V> nodesList = new ArrayList<V>();
+//    private List<V> nodesList = new ArrayList<V>();
     private long id;
 
     public Graph() {
@@ -54,7 +55,7 @@ public class Graph<V extends GraphNode, E extends GraphEdge> extends SparseGraph
             n1.setId(id);
             n1.setData(p);
 
-            nodesList.add(n1); // Maintain Node List for ordering purposes !
+//            nodesList.add(n1); // Maintain Node List for ordering purposes !
             addVertex(n1);
             n1.setGraph(this);
         }
@@ -79,7 +80,7 @@ public class Graph<V extends GraphNode, E extends GraphEdge> extends SparseGraph
 
     public void removeNode(V n) {
 
-        nodesList.remove(n); // Maintain Node List for ordering purposes !
+//        nodesList.remove(n); // Maintain Node List for ordering purposes !
         removeVertex(n);
     }
 
@@ -243,7 +244,8 @@ public class Graph<V extends GraphNode, E extends GraphEdge> extends SparseGraph
     }
 
     public V findNode(Long nodeId) {
-        return findNode(getVerticesList(), nodeId); // TODO - Should we use adjacency list byu default ?!
+//        return findNode(getVerticesList(), nodeId); // TODO - Should we use adjacency list byu default ?!
+        return findNode(new ArrayList(getVertices()), nodeId); // TODO - Should we use adjacency list byu default ?!
     }
 
 
@@ -269,7 +271,8 @@ public class Graph<V extends GraphNode, E extends GraphEdge> extends SparseGraph
         // this Node's incList.
 
         if (child != null && new_parent != null) {
-            parent = findParent(nodeId, getVerticesList().get(0));
+//            parent = findParent(nodeId, getVerticesList().get(0));
+            parent = findParent(nodeId, getVertices().iterator().next());
 
             if (parent != null) {
 
@@ -325,9 +328,9 @@ public class Graph<V extends GraphNode, E extends GraphEdge> extends SparseGraph
 
     }
 
-    public void clearVerticesList() {
-        nodesList = new ArrayList<V>();
-    }
+//    public void clearVerticesList() {
+//        nodesList = new ArrayList<V>();
+//    }
 
     public List<V> getVerticesList() {
         //CIList<GraphNode> list=new CIList<GraphNode>();
@@ -335,7 +338,8 @@ public class Graph<V extends GraphNode, E extends GraphEdge> extends SparseGraph
         //for(GraphNode v:vertexes) {
         //		list.push(v);
         //}
-        return nodesList;
+//        return nodesList;
+        return new ArrayList(this.getVertices());
     }
 
     /**
@@ -386,7 +390,7 @@ public class Graph<V extends GraphNode, E extends GraphEdge> extends SparseGraph
 
         //System.out.println( "[++] printAdjacencyMatrix: created new symmetric matrix of size " + getVerticesList().getNumItems());
 
-        DoubleMatrix2D sm = adjacencyMatrix(getVerticesList());
+        DoubleMatrix2D sm = adjacencyMatrix(new ArrayList(getVertices()));
 
         //System.out.println(  "Printing adjacency matrix of graph: " + id);
 
@@ -414,7 +418,7 @@ public class Graph<V extends GraphNode, E extends GraphEdge> extends SparseGraph
         List<List<V>> subgraphs = new ArrayList<List<V>>();
 
         // Push the root Node
-        subgraphs.add(getVerticesList());
+        subgraphs.add(new ArrayList(getVertices()));
 
         while (idx < subgraphs.size())
             isolateSubGraphs(subgraphs.get(idx++), maxLevel, subgraphs); // TODO - Check if subgraphs is changed
@@ -772,13 +776,18 @@ public class Graph<V extends GraphNode, E extends GraphEdge> extends SparseGraph
         }
 
         // Clear the old list!
-        newGraph.clearVerticesList();
+        Iterator it = newGraph.getVertices().iterator();
+        for (; it.hasNext();) {
+            V vertex = (V)it.next();
+            newGraph.removeVertex(vertex);
+        }
 
-        for (int i = 0; i < nodesList.size(); i++) {
-            GraphNode n = nodesList.get(i);
+        it = getVertices().iterator();
+        for ( ; it.hasNext() ; ) {
+            GraphNode n = (GraphNode)it.next();
             for (Object o : newGraph.getVertices()) {
                 if (((GraphNode) o).getId() == n.getId()) {
-                    newGraph.getVerticesList().add((GraphNode) o);
+                    newGraph.addVertex(o);
                 }
             }
         }
