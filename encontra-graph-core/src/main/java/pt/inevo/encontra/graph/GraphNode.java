@@ -126,7 +126,8 @@ public class GraphNode<T> implements IEntity<Long> {
      */
     public boolean addIncLink(GraphNode no) {
         if (no != this && !this.isAdjentTo(no)) {
-            getGraph().addEdge(new GraphInclusionEdge(this, no), this, no); //_incList->push(no);
+            GraphEdge edge = new GraphInclusionEdge(this, no);
+            getGraph().addEdge(edge, this, no, edge.getType()); //_incList->push(no);
             return true;
         } else {
             return false;
