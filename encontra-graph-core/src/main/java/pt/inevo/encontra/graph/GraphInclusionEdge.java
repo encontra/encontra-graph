@@ -2,7 +2,6 @@ package pt.inevo.encontra.graph;
 
 import edu.uci.ics.jung.graph.util.EdgeType;
 
-
 public class GraphInclusionEdge extends GraphEdge {
 
 	public GraphInclusionEdge(GraphNode from, GraphNode to) {

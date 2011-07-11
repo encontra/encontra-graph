@@ -4,7 +4,11 @@ import pt.inevo.encontra.storage.IEntity;
 
 import java.util.*;
 
-public class GraphNode<T> implements IEntity<Long> {
+/**
+ * EnContRA framework GraphNode (Vertex).
+ * @param <T>
+ */
+public class GraphNode<T> implements IEntity<Long>  {
 
     private Long id;
     private T data;
@@ -18,12 +22,6 @@ public class GraphNode<T> implements IEntity<Long> {
      */
     public GraphNode() {
         this(-1l);
-//        data = null;
-
-//        this.id = -1l;
-        //, _parent(NULL), _id(-1);
-        //_adjList = new CIList<Node *>();
-        //_incList = new CIList<Node *>();
     }
 
     /**
@@ -36,11 +34,6 @@ public class GraphNode<T> implements IEntity<Long> {
         this.id = id;
         data = null;
         userDatum = new HashMap<String, Object>();
-
-        //(NULL), _parent(NULL) {
-        //_id = id;
-        //_adjList = new CIList<Node *> ();
-        //_incList = new CIList<Node *> ();
     }
 
     public Long getId() {
@@ -83,7 +76,7 @@ public class GraphNode<T> implements IEntity<Long> {
             Collection<GraphEdge> edges = getGraph().findEdgeSet(this, no);
             for (GraphEdge e : edges) {
                 if (e instanceof GraphAdjacencyEdge) {
-                    ((Graph) getGraph()).removeEdge(e);
+                    getGraph().removeEdge(e);
                 }
             }
         }
@@ -110,7 +103,7 @@ public class GraphNode<T> implements IEntity<Long> {
 
             if (!this.isAdjentTo(no) || (allowDuplicates && adjCount <= 1)) {
                 GraphAdjacencyEdge edge = new GraphAdjacencyEdge(this, no);
-                getGraph().addEdge(edge, this, no);
+                getGraph().addEdge(edge, this, no, edge.getType());
                 return edge;
             }
         }
@@ -149,7 +142,7 @@ public class GraphNode<T> implements IEntity<Long> {
         Collection<GraphEdge> edges = getGraph().getOutEdges(this);
         for (GraphEdge e : edges) {
             if (e instanceof GraphInclusionEdge)
-                list.add((GraphNode) ((GraphInclusionEdge) e).getDest());
+                list.add(e.getDest());
         }
         return list;
     }
@@ -183,7 +176,7 @@ public class GraphNode<T> implements IEntity<Long> {
         Collection<GraphEdge> edges = getGraph().findEdgeSet(this, child);
         for (GraphEdge e : edges) {
             if (e instanceof GraphInclusionEdge)
-                ((Graph) getGraph()).removeEdge(e);
+                getGraph().removeEdge(e);
         }
     }
 

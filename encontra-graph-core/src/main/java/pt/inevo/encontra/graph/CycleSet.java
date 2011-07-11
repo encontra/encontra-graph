@@ -2,6 +2,7 @@ package pt.inevo.encontra.graph;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -23,7 +24,7 @@ public class CycleSet extends ArrayList<Cycle>{
 		/*
 		GraphViewer viewer=new GraphViewer(graph);
 		viewer.setVertexDataToShow("point");
-		viewer.Show();
+		viewer.show();
 		*/
 		//viewer.waitUntilClosed();
 		_log.info("Simplifying graph...");
@@ -33,7 +34,7 @@ public class CycleSet extends ArrayList<Cycle>{
         GraphViewer viewer=new GraphViewer(graph);
 		viewer.setVertexDataToShow("point");
 		viewer.setEdgeDataToShow(userDataKey);
-		viewer.Show();*/
+		viewer.show();*/
         
 		//viewer.waitUntilClosed();
 		_log.info("Running FloyWarshall...");
@@ -63,8 +64,10 @@ public class CycleSet extends ArrayList<Cycle>{
 		boolean removing=true; // flag to stop the loop
 		while(removing){
 			removing=false;
-			for(int i=0;i<g.getVertexCount();i++){
-				GraphNode n=(GraphNode)g.getVerticesList().get(i);
+//			for(int i=0;i<g.getVertexCount();i++){
+			for(Iterator<GraphNode> it = g.getVertices().iterator(); it.hasNext(); ){
+//				GraphNode n=(GraphNode)g.getVerticesList().get(i);
+				GraphNode n = it.next();
 				List<GraphNode> adjList=n.getAdjList();
 				int nAdj=adjList.size();
 				if(nAdj==2){
@@ -212,12 +215,13 @@ public class CycleSet extends ArrayList<Cycle>{
 					//YIELD_CONTROL();			
 
 					// if paths exists and points x and y are adjacent
-					if (path_vx!=null && path_vy!=null && ( (GraphNode) graph.getVerticesList().get(x)).isAdjentTo((GraphNode) graph.getVerticesList().get(y))) {
-						Long v_id=( (GraphNode) graph.getVerticesList().get(v)).getId();
+                    List<GraphNode> verticesList = new ArrayList(graph.getVertices());
+					if (path_vx!=null && path_vy!=null && (verticesList.get(x)).isAdjentTo(verticesList.get(y))) {
+						Long v_id = verticesList.get(v).getId();
 						boolean only=IsOnlyCommonPointInPaths(v_id, path_vx, path_vy);
-						boolean tierman=IsTiermanCompliant( (GraphNode) graph.getVerticesList().get(v), path_vx, path_vy);
+						boolean tierman=IsTiermanCompliant(verticesList.get(v), path_vx, path_vy);
 						if (IsOnlyCommonPointInPaths(v_id, path_vx, path_vy) &&
-							IsTiermanCompliant( (GraphNode) graph.getVerticesList().get(v), path_vx, path_vy)){												
+							IsTiermanCompliant(verticesList.get(v), path_vx, path_vy)){
 							ArrayList<Long> ids_path_vx=new ArrayList<Long>();
 							ArrayList<Long> ids_path_vy=new ArrayList<Long>();
 							for(GraphNode g:path_vx)

@@ -17,7 +17,7 @@ public class FloydWarshall {
 	ArrayList <GraphNode> nodes = new ArrayList<GraphNode>();
 	
 	public void initialize(Graph graph) {
-		List <GraphNode> cilst=graph.getVerticesList();
+		List <GraphNode> cilst = new ArrayList(graph.getVertices());
 		List <GraphNode> lst=new ArrayList<GraphNode>();
 		for(int i=0;i<cilst.size();i++)
 			lst.add(cilst.get(i));

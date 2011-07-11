@@ -6,14 +6,12 @@ import pt.inevo.encontra.storage.IEntity;
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class GraphEdge implements IEntity<Long> { //extends Edge{
+/**
+ * Generic GraphEdge (Edge).
+ */
+public abstract class GraphEdge implements IEntity<Long> {
 
-	/*public GraphEdge(GraphNode from, GraphNode to) {
-		super(from, to);
-	}*/
-
-    private GraphNode from;
-    private GraphNode to;
+    private GraphNode from, to;
     private Long id;
     private Map<String, Object> userDatum;
 
@@ -27,28 +25,11 @@ public abstract class GraphEdge implements IEntity<Long> { //extends Edge{
 	public Long getId() {
         return id;
     }
-	/*{
-		return id;
-	}*/
 
     @Override
 	public void setId(Long pid) {
         this.id = pid;
     }
-	/*{
-		id=pid;
-	}*/
-
-	/*
-	@Override
-	public GraphNode getDest() {
-		return (GraphNode) super.getDest();
-	}
-
-	@Override
-	public GraphNode getSource() {
-		return (GraphNode) super.getSource();
-	}*/
 
     public GraphNode getSource() {
         return from;

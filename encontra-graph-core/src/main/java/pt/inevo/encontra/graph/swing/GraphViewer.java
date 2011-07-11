@@ -1,13 +1,19 @@
 package pt.inevo.encontra.graph.swing;
 
+import edu.uci.ics.jung.algorithms.layout.CircleLayout;
+import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.graph.event.GraphEvent;
+import edu.uci.ics.jung.visualization.BasicVisualizationServer;
 import edu.uci.ics.jung.visualization.GraphZoomScrollPane;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.CrossoverScalingControl;
 import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.GraphMouseListener;
 import edu.uci.ics.jung.visualization.control.ScalingControl;
+import org.apache.commons.collections15.Transformer;
+import pt.inevo.encontra.graph.GraphEdge;
+import pt.inevo.encontra.graph.GraphNode;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -33,6 +39,47 @@ public class GraphViewer {
 
     public GraphViewer(Graph graph) {
         _graph = graph;
+
+//        SimpleGraphView sgv = new SimpleGraphView(); //We create our graph in here
+        // The Layout<V, E> is parameterized by the vertex and edge types
+        Layout<GraphNode, GraphEdge> layout = new CircleLayout(graph);
+        layout.setSize(new Dimension(300,300)); // sets the initial size of the space
+         // The BasicVisualizationServer<V,E> is parameterized by the edge types
+         BasicVisualizationServer<GraphNode,GraphEdge> vv =
+                  new BasicVisualizationServer<GraphNode,GraphEdge>(layout);
+         vv.setPreferredSize(new Dimension(350,350)); //Sets the viewing area size
+
+        Transformer<GraphNode,Paint> vertexPaint = new Transformer<GraphNode,Paint>() {
+            public Paint transform(GraphNode i) {
+                return Color.GREEN;
+            }
+        };
+
+        // Set up a new stroke Transformer for the edges
+        float dash[] = {10.0f};
+        final Stroke edgeStroke = new BasicStroke(1.0f, BasicStroke.CAP_BUTT,
+             BasicStroke.JOIN_MITER, 10.0f, dash, 0.0f);
+        Transformer<GraphEdge, Stroke> edgeStrokeTransformer =
+              new Transformer<GraphEdge, Stroke>() {
+            public Stroke transform(GraphEdge s) {
+                return edgeStroke;
+            }
+        };
+
+        // Set up a new vertex to label transformer...
+        Transformer<GraphNode,String> vertexLabel =
+			new Transformer<GraphNode,String>() {
+		public String transform(GraphNode n) {
+                return Long.toString(n.getId());
+            }
+        };
+
+        vv.getRenderContext().setVertexFillPaintTransformer(vertexPaint);
+        vv.getRenderContext().setVertexLabelTransformer(vertexLabel);
+//        vv.getRenderContext().setEdgeStrokeTransformer(edgeStrokeTransformer);
+//        vv.getRenderContext().setVertexLabelTransformer(new ToStringLabeller());
+//        vv.getRenderContext().setEdgeLabelTransformer(new ToStringLabeller());
+//        vv.getRenderer().getVertexLabelRenderer().setPosition(edu.uci.ics.jung.visualization.renderers.Renderer.VertexLabel.Position.CNTR);
 
 //        PluggableRenderer pr = new PluggableRenderer();
 //
@@ -74,10 +121,14 @@ public class GraphViewer {
 //        _viewer.setToolTipFunction(tooltip);
 
         // Create a new JFrame.
-        frame = new JFrame("JUNG");
+        frame = new JFrame("Graph Viewer");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.getContentPane().add(vv);
+        frame.pack();
+//        frame.setVisible(true);
 
         // Add components to the frame.
-        createComponents();
+//        createComponents();
 
         // Display the frame.
         frame.addWindowListener(new WindowAdapter() {
@@ -106,7 +157,7 @@ public class GraphViewer {
         }
     }
 
-    public void Show() {
+    public void show() {
         frame.setVisible(true);
     }
 

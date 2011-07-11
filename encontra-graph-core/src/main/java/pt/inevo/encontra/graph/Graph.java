@@ -17,18 +17,17 @@ import java.util.List;
 public class Graph<V extends GraphNode, E extends GraphEdge> extends SparseGraph<V, E> implements IEntity<Long> {
 
     //!< # of IDs stored in front of the feature vector. (in this case: graph, subgraph and level)
-    public static int NIDS = 3;
+//    public static int NIDS = 3;
 
     /**
      * Used to divide the descriptor-entries by to make sure none of the entries is > 1.
      * This value is untested and actually based on nothing.
      */
     public static float MAXVAL = 250;
-    public static float MAXID = 999;    //!< ? A Node's id cannot be bigger than MAXID?
+//    public static float MAXID = 999;    //!< ? A Node's id cannot be bigger than MAXID?
     public static int MIN_NODES = 2;    //!< We don't compute descriptors for subgraphs with less then MIN_NODES
-    public static int MAXLEVEL = 10;    //!< Maximum depth to calculate the adjacency for.
+//    public static int MAXLEVEL = 10;    //!< Maximum depth to calculate the adjacency for.
 
-//    private List<V> nodesList = new ArrayList<V>();
     private long id;
 
     public Graph() {
@@ -60,16 +59,23 @@ public class Graph<V extends GraphNode, E extends GraphEdge> extends SparseGraph
             n1.setGraph(this);
         }
 
-        return (V)n1;
+        return n1;
     }
 
-    public boolean addNode(V node) {
-        boolean result = addVertex(node);
+    @Override
+    public boolean addVertex(V node) {
+        boolean result = super.addVertex(node);
         node.setGraph(this);
         return result;
     }
 
-    public boolean addAllNodes(List<V> nodes) {
+//    public boolean addNode(V node) {
+//        boolean result = addVertex(node);
+//        node.setGraph(this);
+//        return result;
+//    }
+
+    public boolean addAllVertices(List<V> nodes) {
         boolean result = true;
         for (V n : nodes) {
             result &= addVertex(n);
@@ -79,7 +85,6 @@ public class Graph<V extends GraphNode, E extends GraphEdge> extends SparseGraph
     }
 
     public void removeNode(V n) {
-
 //        nodesList.remove(n); // Maintain Node List for ordering purposes !
         removeVertex(n);
     }
@@ -326,20 +331,6 @@ public class Graph<V extends GraphNode, E extends GraphEdge> extends SparseGraph
 
         return null;
 
-    }
-
-//    public void clearVerticesList() {
-//        nodesList = new ArrayList<V>();
-//    }
-
-    public List<V> getVerticesList() {
-        //CIList<GraphNode> list=new CIList<GraphNode>();
-        //Set<GraphNode> vertexes=this.getVertices();
-        //for(GraphNode v:vertexes) {
-        //		list.push(v);
-        //}
-//        return nodesList;
-        return new ArrayList(this.getVertices());
     }
 
     /**
@@ -787,7 +778,7 @@ public class Graph<V extends GraphNode, E extends GraphEdge> extends SparseGraph
             GraphNode n = (GraphNode)it.next();
             for (Object o : newGraph.getVertices()) {
                 if (((GraphNode) o).getId() == n.getId()) {
-                    newGraph.addVertex(o);
+                    newGraph.addVertex((V)o);
                 }
             }
         }
