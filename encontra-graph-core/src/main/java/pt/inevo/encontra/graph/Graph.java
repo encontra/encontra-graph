@@ -8,13 +8,16 @@ import cern.colt.matrix.linalg.EigenvalueDecomposition;
 import edu.uci.ics.jung.graph.SparseGraph;
 import pt.inevo.encontra.common.distance.HasDistance;
 import pt.inevo.encontra.storage.IEntity;
+import sun.rmi.runtime.Log;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
 public class Graph<V extends GraphNode, E extends GraphEdge> extends SparseGraph<V, E> implements IEntity<Long> {
+
 
     //!< # of IDs stored in front of the feature vector. (in this case: graph, subgraph and level)
 //    public static int NIDS = 3;
@@ -62,9 +65,17 @@ public class Graph<V extends GraphNode, E extends GraphEdge> extends SparseGraph
         return n1;
     }
 
-    @Override
+    private ArrayList<V> nodes = new ArrayList<V>();
+
+  @Override
+  public Collection<V> getVertices() {
+    return nodes;    //To change body of overridden methods use File | Settings | File Templates.
+  }
+
+  @Override
     public boolean addVertex(V node) {
         boolean result = super.addVertex(node);
+        nodes.add(node);
         node.setGraph(this);
         return result;
     }
