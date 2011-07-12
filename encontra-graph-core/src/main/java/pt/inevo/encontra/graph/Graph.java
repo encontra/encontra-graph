@@ -8,37 +8,40 @@ import cern.colt.matrix.linalg.EigenvalueDecomposition;
 import edu.uci.ics.jung.graph.SparseGraph;
 import pt.inevo.encontra.common.distance.HasDistance;
 import pt.inevo.encontra.storage.IEntity;
-import sun.rmi.runtime.Log;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+/**
+ * An entity representing a Graph in the EnContRA framework.
+ * @param <V> the type of the graph node, must extend the GraphNode class
+ * @param <E> the type of the graph edge, must extend the GraphEdge class
+ */
 public class Graph<V extends GraphNode, E extends GraphEdge> extends SparseGraph<V, E> implements IEntity<Long> {
-
-
-    //!< # of IDs stored in front of the feature vector. (in this case: graph, subgraph and level)
-//    public static int NIDS = 3;
 
     /**
      * Used to divide the descriptor-entries by to make sure none of the entries is > 1.
      * This value is untested and actually based on nothing.
      */
-    public static float MAXVAL = 250;
-//    public static float MAXID = 999;    //!< ? A Node's id cannot be bigger than MAXID?
-    public static int MIN_NODES = 2;    //!< We don't compute descriptors for subgraphs with less then MIN_NODES
-//    public static int MAXLEVEL = 10;    //!< Maximum depth to calculate the adjacency for.
+    private static float MAXVAL = 250;
+    private static int MIN_NODES = 2;    //!< We don't compute descriptors for subgraphs with less then MIN_NODES
+    protected static Logger log = Logger.getLogger(Graph.class.toString());
+    protected ArrayList<V> nodes = new ArrayList<V>();
 
     private long id;
 
     public Graph() {
-        id = -1;
+        this(new Long(-1));
     }
 
     public Graph(Long id) {
         this.id = id;
+        log.log(Level.INFO, "Graph with id " + id + " created.");
     }
 
     public V createNode(Long id) {
@@ -50,14 +53,9 @@ public class Graph<V extends GraphNode, E extends GraphEdge> extends SparseGraph
 
         // Make sure there is no Node with the given id
         if ((n1 = findNode(id)) == null) {
-
-            ////System.out.println("[++] createNode: creating Node with id [" + id + "]");
-
-//            n1 = new V(id);
             n1.setId(id);
             n1.setData(p);
 
-//            nodesList.add(n1); // Maintain Node List for ordering purposes !
             addVertex(n1);
             n1.setGraph(this);
         }
@@ -65,27 +63,34 @@ public class Graph<V extends GraphNode, E extends GraphEdge> extends SparseGraph
         return n1;
     }
 
-    private ArrayList<V> nodes = new ArrayList<V>();
+    /**
+     * Gets the Graph Vertices ordered by the insertion.
+     * @return a collection of the graph vertices
+     */
+    @Override
+    public Collection<V> getVertices() {
+        return nodes;
+    }
 
-  @Override
-  public Collection<V> getVertices() {
-    return nodes;    //To change body of overridden methods use File | Settings | File Templates.
-  }
-
-  @Override
+    /**
+     * Adds a vertex to the Graph.
+     * @param node the vertex to be added
+     * @return true if the vertex is successfully added, or false otherwise
+     */
+    @Override
     public boolean addVertex(V node) {
         boolean result = super.addVertex(node);
         nodes.add(node);
         node.setGraph(this);
+        log.log(Level.INFO, "Vertex with id " + node.getId() + " added? Value = " + result);
         return result;
     }
 
-//    public boolean addNode(V node) {
-//        boolean result = addVertex(node);
-//        node.setGraph(this);
-//        return result;
-//    }
-
+    /**
+     * Adds all the vertices to the graph.
+     * @param nodes the nodes to be added
+     * @return true if all the vertices are successfully added, or false otherwise
+     */
     public boolean addAllVertices(List<V> nodes) {
         boolean result = true;
         for (V n : nodes) {
@@ -95,11 +100,21 @@ public class Graph<V extends GraphNode, E extends GraphEdge> extends SparseGraph
         return result;
     }
 
-    public void removeNode(V n) {
-//        nodesList.remove(n); // Maintain Node List for ordering purposes !
-        removeVertex(n);
+    /**
+     * Removes a vertex from the graph.
+     * @param n the vertex to be removed
+     * @return true if the vertex is successfully removed, or false otherwise
+     */
+    public boolean removeNode(V n) {
+        return removeVertex(n);
     }
 
+    /**
+     * Adds a child vertex to a parent one.
+     * @param currentNodeId the parent vertex
+     * @param childNodeId the child vertex
+     * @return
+     */
     public boolean addChild(Long currentNodeId, Long childNodeId) {
         V parentNode = null;
         V childNode = null;
@@ -107,19 +122,19 @@ public class Graph<V extends GraphNode, E extends GraphEdge> extends SparseGraph
         // Try to find the node corresponding to currentNodeId.
         parentNode = findNode(currentNodeId);
         if (parentNode == null) {
-            //System.out.println( "[--] addChild: Could not find parent");
+            log.log(Level.INFO, "[--] addChild: Could not find parent");
         }
 
         // Try to find the node corresponding to childNodeId.
         childNode = findNode(childNodeId);
         if (childNode == null) {
-            //System.out.println( "[--] Graph::addChild: Could not find child");
+            log.log(Level.INFO, "[--] addChild: Could not find child");
         }
 
         // Insert the child into the parent's incList and update its pointer
         // to its parent node.
         if (parentNode != null && childNode != null) {
-            //System.out.println( "[++] Graph::addChild: adding child " + childNodeId + " to parent " + currentNodeId );
+            log.log(Level.INFO, "[++] Graph::addChild: adding child \" + childNodeId + \" to parent \" + currentNodeId ");
 
             // TODO - check if we can find the parent childNode->setParent(parentNode);
 
@@ -212,8 +227,6 @@ public class Graph<V extends GraphNode, E extends GraphEdge> extends SparseGraph
      * is found, NULL otherwise.
      */
     List<GraphNode> findSubGraph(int subGraphRootId, List<List<GraphNode>> subgraphs) {
-        //System.out.println("[++] findSubGraph: finding subgraph with root " + subGraphRootId);
-
         int i;
         for (i = 0; i < subgraphs.size(); i++) {
             if (subgraphs.get(i).get(0).getId() == subGraphRootId) {
@@ -242,25 +255,26 @@ public class Graph<V extends GraphNode, E extends GraphEdge> extends SparseGraph
      *         is found, -1 otherwise.
      */
     V findNode(List<V> list, Long nodeId) {
-
-        ////System.out.println("[++] findNode: looking for node " + nodeId );
-
+        log.log(Level.INFO, "[++] findNode: looking for node " + nodeId );
 
         for (int i = 0; i < list.size(); i++) {
-            ////System.out.println("[++] findNode: trying node" + list.get(i).getId());
 
             if (list.get(i).getId() == nodeId) {
-                ////System.out.println("[++] findNode: found node");
-
+                log.log(Level.INFO, "[++] findNode: found node!");
                 return list.get(i);
             }
         }
 
+        log.log(Level.INFO, "[++] findNode: Node not found!");
         return null;
     }
 
+    /**
+     * Finds a vertex based on its id.
+     * @param nodeId the vertex id
+     * @return the vertex if it was found, or null otherwise
+     */
     public V findNode(Long nodeId) {
-//        return findNode(getVerticesList(), nodeId); // TODO - Should we use adjacency list byu default ?!
         return findNode(new ArrayList(getVertices()), nodeId); // TODO - Should we use adjacency list byu default ?!
     }
 
@@ -275,7 +289,7 @@ public class Graph<V extends GraphNode, E extends GraphEdge> extends SparseGraph
      * @return Returns true iff the new parent was succesfully set.
      */
     public boolean setParent(Long nodeId, Long newParentId) {
-        //System.out.println("[++] Graph::setParent - Setting the parent of [" + nodeId + "] to [" + newParentId + "]" );
+        log.log(Level.INFO, "[++] Graph::setParent - Setting the parent of [" + nodeId + "] to [" + newParentId + "]" );
 
         // Try to find the Nodes with id nodeId and newParentId
         GraphNode child = findNode(nodeId);
@@ -285,25 +299,21 @@ public class Graph<V extends GraphNode, E extends GraphEdge> extends SparseGraph
         // If child and new_parent are found in nodesList, try to determine
         // the *parent* of the Node with id nodeId and remove the child from
         // this Node's incList.
-
         if (child != null && new_parent != null) {
-//            parent = findParent(nodeId, getVerticesList().get(0));
             parent = findParent(nodeId, getVertices().iterator().next());
 
             if (parent != null) {
 
-                //System.out.println("     Graph::setParent - Removing Node from inclist of Node(" + parent.getId() + ")");
+                log.log(Level.INFO, "Graph::setParent - Removing Node from inclist of Node(" + parent.getId() + ")");
                 parent.remIncLink(child);
 
                 // Add the child to the new parent's incList.
-                //System.out.println("     Graph::setParent - Adding Node to inclist of Node(" + newParentId + ")");
+                log.log(Level.INFO, "Graph::setParent - Adding Node to inclist of Node(" + newParentId + ")");
                 new_parent.addIncLink(child);
 
                 // Setting the child's parent Node
                 // TODO - Check if this is necessary - child.setParent(new_parent);
-
                 return true;
-
             }
         }
 
@@ -389,13 +399,7 @@ public class Graph<V extends GraphNode, E extends GraphEdge> extends SparseGraph
      *         Prints the adjacency matrix for this graph.
      */
     public void printAdjacencyMatrix() {
-
-        //System.out.println( "[++] printAdjacencyMatrix: created new symmetric matrix of size " + getVerticesList().getNumItems());
-
         DoubleMatrix2D sm = adjacencyMatrix(new ArrayList(getVertices()));
-
-        //System.out.println(  "Printing adjacency matrix of graph: " + id);
-
         int i, j;
         for (i = 0; i < sm.rows(); i++) {
             for (j = 0; j < sm.columns(); j++) {
@@ -455,7 +459,7 @@ public class Graph<V extends GraphNode, E extends GraphEdge> extends SparseGraph
                 int idx = 0;
 
                 do {
-                    subList.addAll(subList.get(idx++).getIncList()); //subList.joinListAfter(  );
+                    subList.addAll(subList.get(idx++).getIncList());
                 } while (idx < subList.size());
 
                 if (subList.size() >= MIN_NODES)
@@ -466,60 +470,6 @@ public class Graph<V extends GraphNode, E extends GraphEdge> extends SparseGraph
     }
 
     /**
-     * Computes a descriptor for the graph, using all eigenvalues.
-     *
-     * @param graphList    List containing the subgraphs for wich the descriptors
-     *					have to be computed.
-     *
-    void subgraphDescSet(List<GraphNode> graphList,List<DoubleMatrix1D> descriptorSet) {
-    levelDescriptor(graphList, 0, 0, descriptorSet);
-    }
-
-
-    /**
-     * Computes the set of descriptors (one for each level) for a subgraph.
-     *
-     * The subgraph is specified by the list of nodes (graphList).
-     *
-     * @param graphList        List containing the subgraphs for wich the descriptors
-     *						have to be computed.
-     * @param subGraphID    The id of the subGraph for wich the descriptors
-     *						have to be computed. (CHECK!)
-     *
-    void subgraphDescSet(List<GraphNode> graphList, int subGraphID, List<DoubleMatrix1D> descriptorSet) {
-
-    int level=0;
-
-    List<GraphNode> currSubGraph = new ArrayList<GraphNode> ();
-
-    currSubGraph.add(graphList.get(0));  // adds the root node of the subgraph
-    List<GraphNode> level1List = graphList.get(0).getIncList();
-    currSubGraph.addAll(level1List);
-
-    levelDescriptor(currSubGraph, level, subGraphID,descriptorSet);
-
-    while (currSubGraph.size() != graphList.size()) {
-    level++;
-    List<GraphNode> newLevel = new ArrayList<GraphNode>();
-
-    int i;
-    for(i = 0; i < level1List.size(); i++) {
-    newLevel.addAll( level1List.get(i).getIncList() );
-    }
-
-    currSubGraph.addAll(newLevel);
-
-    levelDescriptor(currSubGraph, level, subGraphID, descriptorSet);
-
-    if (level > 1) {
-    //delete level1List;
-    }
-
-    level1List = newLevel;
-    }
-    }*/
-
-    /**
      * Constructs the adjacency matrix of the Graph described by a
      * list of Nodes.
      *
@@ -528,16 +478,9 @@ public class Graph<V extends GraphNode, E extends GraphEdge> extends SparseGraph
     public static DoubleMatrix2D adjacencyMatrix(List<? extends GraphNode> list) {
         DoubleMatrix2D adjMatrix = DoubleFactory2D.sparse.make(list.size(), list.size());
 
-        // Set all entries in the matrix to zero. This is necessary because not all
-        // positions will be set by inclusion/adjacency values.
-        //System.out.println( "Graph::adjacencyMatrix - Cleaning matrix" );
-
-        // TODO - Do we need to clean the Matrix ? cleanMatrix(adjMatrix);
-
         // Check the matrix is of the correct size.
         assert (adjMatrix.rows() == adjMatrix.columns());
         assert (adjMatrix.rows() == list.size());
-
 
         // Define counters
         int i = 0;
@@ -562,39 +505,12 @@ public class Graph<V extends GraphNode, E extends GraphEdge> extends SparseGraph
 
             int currentIndex = 0;
 
-            //Iterator<GraphNode> it=indexMap.keySet().iterator();
-
-            //while(it.hasNext() && it.next()!=currentNode); //it = indexMap.find(currentNode)
-
             if (indexMap.containsKey(currentNode)) {
                 currentIndex = indexMap.get(currentNode);
-                //System.out.println( "[++] adjacencyMatrix: current node with index " + currentIndex );
             }
 
             // Get the currentNode's primitive
             HasDistance onePrimitive = (HasDistance) currentNode.getData();  // TODO - enforce the data object to implement HasDistance
-            //Double number = 1.0;
-
-            /* Calculate the features of the current node's primitive
-               if (onePrimitive.getNumPoints() > 0) {
-                   Geometry g=new Geometry();
-                   g.newScribble();
-                   g.newStroke();
-
-                   for (j = 0; j < onePrimitive.getNumPoints(); j++) {
-                       g.addPoint(onePrimitive.getPoint(j).x, onePrimitive.getPoint(j).y);
-                   }
-                   ArrayList <Double> fVector = g.geometricFeatures(true);
-
-                   // These features have to be processed into a number
-                   number = featuresToNumber(fVector);
-
-                   adjMatrix.set(currentIndex, currentIndex, 0);
-
-                   *//*
-				std::cout << "[adjacencyMatrix] calculated the number " << number << " for primitive " << currentIndex << std::endl;
-							*//*
-			} */
 
             // Do the inclusions ...
             List<GraphNode> includedNodes = currentNode.getIncList();
@@ -604,8 +520,6 @@ public class Graph<V extends GraphNode, E extends GraphEdge> extends SparseGraph
 
                 if (indexMap.containsKey(includedNode)) {
                     int includedIndex = indexMap.get(includedNode);
-
-                    //System.out.println("[++] adjacencyMatrix: found included node with index " + includedIndex );
 
                     try {
                         adjMatrix.set(currentIndex, includedIndex, 1);
@@ -624,8 +538,6 @@ public class Graph<V extends GraphNode, E extends GraphEdge> extends SparseGraph
                 if (indexMap.containsKey(adjacentNode)) {
                     int adjacentIndex = indexMap.get(adjacentNode);
 
-                    //System.out.println( "[++] adjacencyMatrix: found adjacent node with index " + adjacentIndex );
-
                     double seedValue = 0.0;
 
                     // primitive of current node already retrieved in enclosing scope
@@ -641,26 +553,18 @@ public class Graph<V extends GraphNode, E extends GraphEdge> extends SparseGraph
                 }
             }
         }
-
-        //printAdjacencyMatrix(adjMatrix);
-        //System.out.println("[++] adjacencyMatrix - DONE" );
         return adjMatrix;
     }
 
     /**
      * Computes the eigenvalues of a symmetric matrix.
      */
-    public static DoubleMatrix1D subgraphEigenvalues(DoubleMatrix2D matrix) { //, RowVector* &eigenVals
-        //System.out.println( "subgraphEigenvalues: computing eigenvalues for " + matrix.rows()+ "x" +matrix.columns() + " matrix" );
-
-        //RowVector vals(matrix->Ncols());
-        //DiagonalMatrix D;
+    public static DoubleMatrix1D subgraphEigenvalues(DoubleMatrix2D matrix) {
 
         DoubleMatrix1D vals = DoubleFactory1D.sparse.make(matrix.columns());
-        EigenvalueDecomposition eigenValues = new EigenvalueDecomposition(matrix); //EigenValues(*matrix, D);
+        EigenvalueDecomposition eigenValues = new EigenvalueDecomposition(matrix);
 
         DoubleMatrix2D D = eigenValues.getD();
-        //System.out.println("subgraphEigenvalues: computed eigenvalues!");
 
         int c = 0;
 
@@ -670,8 +574,7 @@ public class Graph<V extends GraphNode, E extends GraphEdge> extends SparseGraph
 
             // vals(i) cannot be bigger then 1 since NBtree expects its values to be between (0,1).
             if (vals.get(i) > 1) {
-                //System.out.println( "[!!] Graph::subgraphEigenvalues - Warning! Value bigger than 1 !! - " + vals.get(i));
-                //exit(1);
+                log.log(Level.WARNING, "[!!] Graph::subgraphEigenvalues - Warning! Value bigger than 1 !! - " + vals.get(i));
             }
 
             if (vals.get(i) < 0.001 / MAXVAL) {
@@ -683,13 +586,6 @@ public class Graph<V extends GraphNode, E extends GraphEdge> extends SparseGraph
 
         // descending order
         return vals.viewSorted().viewFlip();
-
-        /*
-          eigenVals = new RowVector(c);
-
-          for (i=1; i <= c; i++) {
-              (*eigenVals)(i) = vals(i);
-          }*/
     }
 
     /**
@@ -701,59 +597,12 @@ public class Graph<V extends GraphNode, E extends GraphEdge> extends SparseGraph
     Double featuresToNumber(ArrayList<Double> fVector) {
         Double returnValue = 0.0;
 
-        //int numberOfNumbers = fVector.get(0).intValue();
         int i;
         for (i = 0; i < fVector.size(); i++)
             returnValue += (i * fVector.get(i));
 
         return returnValue;
     }
-
-    /**
-     * Computes a descriptor for a level.
-     *
-     * @param currSubGraph The current subgraph
-     * @param level        The level to compute?
-     * @param subGraphID   The id of the subgraph for which to compute the descriptor?
-     *                     <p/>
-     *                     void levelDescriptor(List<GraphNode> currSubGraph, int level, int subGraphID, List<DoubleMatrix1D> descriptorSet) {
-     *                     //System.out.println("[++] Graph::levelDescriptor - Computing leveldescriptor for level [" + level + "] with subGraphID [" + subGraphID + "]");
-     *                     //System.out.println("[++] Graph::levelDescriptor - getNumItems =" + currSubGraph.getNumItems());
-     *                     <p/>
-     *                     <p/>
-     *                     if (currSubGraph.size() > 1) {
-     *                     <p/>
-     *                     DoubleMatrix2D adjMatrix;
-     *                     //(currSubGraph->getNumItems());
-     *                     <p/>
-     *                     <p/>
-     *                     //System.out.println("[++] levelDescriptor: computing adjacency matrix" );
-     *                     adjMatrix=adjacencyMatrix(currSubGraph);
-     *                     <p/>
-     *                     DoubleMatrix1D eig=	subgraphEigenvalues(adjMatrix);
-     *                     <p/>
-     *                     DoubleMatrix1D vals=DoubleFactory1D.sparse.make(eig.size() + NIDS);
-     *                     <p/>
-     *                     vals.set(1, id);
-     *                     vals.set(2, subGraphID);
-     *                     vals.set(3, level);
-     *                     <p/>
-     *                     //System.out.println("[++] Graph::levelDescriptor - creating RowVector id " +  id + " subGraphID " + subGraphID + " level " + level);
-     *                     <p/>
-     *                     int j;
-     *                     for(j = 0; j < eig.size(); j++) {
-     *                     vals.set(j+NIDS,eig.get(j));
-     *                     //System.out.println("[++] levelDescriptor: pushing value " + eig.get(j) + " to RowVector" );
-     *                     }
-     *                     <p/>
-     *                     descriptorSet.push(vals);
-     *                     <p/>
-     *                     //delete adjMatrix;
-     *                     //delete eig;
-     *                     }
-     *                     <p/>
-     *                     }
-     */
 
     public Long getId() {
         return id;
@@ -764,12 +613,12 @@ public class Graph<V extends GraphNode, E extends GraphEdge> extends SparseGraph
         this.id = id;
     }
 
-    public void FloydWarshall() {
-        // TODO Auto-generated method stub
-
-    }
-
-    public Graph copy() {
+    /**
+     * Creates a clone of the Graph.
+     * @return
+     */
+    @Override
+    public Graph clone() {
         Graph newGraph = null;
         try {
             newGraph = (Graph) super.clone();
@@ -779,17 +628,17 @@ public class Graph<V extends GraphNode, E extends GraphEdge> extends SparseGraph
 
         // Clear the old list!
         Iterator it = newGraph.getVertices().iterator();
-        for (; it.hasNext();) {
-            V vertex = (V)it.next();
+        for (; it.hasNext(); ) {
+            V vertex = (V) it.next();
             newGraph.removeVertex(vertex);
         }
 
         it = getVertices().iterator();
-        for ( ; it.hasNext() ; ) {
-            GraphNode n = (GraphNode)it.next();
+        for (; it.hasNext(); ) {
+            GraphNode n = (GraphNode) it.next();
             for (Object o : newGraph.getVertices()) {
                 if (((GraphNode) o).getId() == n.getId()) {
-                    newGraph.addVertex((V)o);
+                    newGraph.addVertex((V) o);
                 }
             }
         }
