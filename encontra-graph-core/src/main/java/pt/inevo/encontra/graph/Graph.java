@@ -82,7 +82,7 @@ public class Graph<V extends GraphNode, E extends GraphEdge> extends SparseGraph
         boolean result = super.addVertex(node);
         nodes.add(node);
         node.setGraph(this);
-        log.log(Level.INFO, "Vertex with id " + node.getId() + " added? Value = " + result);
+//        log.log(Level.INFO, "Vertex with id " + node.getId() + " added? Value = " + result);
         return result;
     }
 
