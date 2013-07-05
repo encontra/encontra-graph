@@ -8,7 +8,7 @@ import java.util.*;
  * EnContRA framework GraphNode (Vertex).
  * @param <T>
  */
-public class GraphNode<T> implements IEntity<Long>  {
+public class GraphNode<T> implements IEntity<Long>, Cloneable  {
 
     private Long id;
     private T data;
@@ -130,9 +130,11 @@ public class GraphNode<T> implements IEntity<Long>  {
     public List<GraphNode> getAdjList() {
         List<GraphNode> list = new ArrayList<GraphNode>();
         Collection<GraphEdge> edges = getGraph().getOutEdges(this);
-        for (GraphEdge e : edges) {
-            if (e instanceof GraphAdjacencyEdge)
-                list.add((GraphNode) getGraph().getOpposite(this, e));
+        if (edges != null) {
+            for (GraphEdge e : edges) {
+                if (e instanceof GraphAdjacencyEdge)
+                    list.add((GraphNode) getGraph().getOpposite(this, e));
+            }
         }
         return list;
     }
@@ -203,5 +205,28 @@ public class GraphNode<T> implements IEntity<Long>  {
 
     public Object setUserDatum(String key, Object datum) {
         return userDatum.put(key, datum);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof GraphNode)) return false;
+
+        GraphNode graphNode = (GraphNode) o;
+
+        if (!id.equals(graphNode.id)) return false;
+
+        return true;
+    }
+
+    @Override
+    public GraphNode clone() {
+        GraphNode node = new GraphNode(id);
+
+        for (Map.Entry<String, Object> entry : userDatum.entrySet()) {
+            node.setUserDatum(entry.getKey(), entry.getValue());
+        }
+
+        return node;
     }
 }

@@ -9,11 +9,11 @@ import java.util.Map;
 /**
  * Generic GraphEdge (Edge).
  */
-public abstract class GraphEdge implements IEntity<Long> {
+public abstract class GraphEdge implements IEntity<Long>, Cloneable {
 
-    private GraphNode from, to;
-    private Long id;
-    private Map<String, Object> userDatum;
+    protected GraphNode from, to;
+    protected Long id;
+    protected Map<String, Object> userDatum;
 
     public GraphEdge(GraphNode from, GraphNode to) {
         this.setSource(from);
@@ -56,4 +56,16 @@ public abstract class GraphEdge implements IEntity<Long> {
     }
 
     public abstract EdgeType getType();
+
+    @Override
+    abstract public GraphEdge clone();
+
+
+   public boolean isIncident(GraphNode n) {
+       if (getType().equals(EdgeType.UNDIRECTED)) {
+         return n.equals(from) || n.equals(to);
+       } else {
+           return n.equals(to);
+       }
+   }
 }

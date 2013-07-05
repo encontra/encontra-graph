@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Cycle implements Comparable<Cycle> {
-    Long _generated_from;
+    long _generated_from;
     ArrayList<Long> _p_cycle = new ArrayList<Long>();
     ArrayList<Long> _p_edge_list = new ArrayList<Long>();
     private Graph graph;
@@ -22,7 +22,7 @@ public class Cycle implements Comparable<Cycle> {
         return (_p_edge_list != null && _p_edge_list.size() > number) ? _p_edge_list.get(number) : 0;
     }
 
-    public void addVertexAt(int pos, Long vertexId) {
+    public void addVertexAt(int pos, long vertexId) {
         _p_cycle.add(pos, vertexId);
     }
 
@@ -50,8 +50,8 @@ public class Cycle implements Comparable<Cycle> {
         _p_edge_list = null;
         _generated_from = 0l;
         int i;
-        Long item_vx = path_vx.get(0);
-        Long item_vy = path_vy.get(0);
+        long item_vx = path_vx.get(0);
+        long item_vy = path_vy.get(0);
 
 
         // checks if both path start at 'v'

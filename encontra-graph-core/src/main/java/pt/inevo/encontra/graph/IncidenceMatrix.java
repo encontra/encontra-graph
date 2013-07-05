@@ -103,24 +103,20 @@ public class IncidenceMatrix {
 	*/
 	Long GetEdgeNumber(Cycle cycle, Long vertex_a, Long vertex_b)
 	{
-		GraphAdjacencyEdge e;
+        GraphNode node_a= cycle.getGraph().findNode(vertex_a);
+        GraphNode node_b= cycle.getGraph().findNode(vertex_b);
 
-		GraphNode node_a= cycle.getGraph().findNode(vertex_a);
-		GraphNode node_b= cycle.getGraph().findNode(vertex_b);
-		
-		for (int i=0; i< _edge_pool.size();i++){
-			e = _edge_pool.get(i);
-//            if (e.isIncident(node_a) && e.isIncident(node_b))
-//				return e.getId();
+        for (GraphAdjacencyEdge e : _edge_pool) {
 
-            if (cycle.getGraph().isIncident(node_a, e) && cycle.getGraph().isIncident(node_b, e))
+            if (e.isIncident(node_a) && e.isIncident(node_b))
 				return e.getId();
+
 		}
 
 		// if arrives here, there are no such edge in edge pool
 		// so we must create a new edge
-		
-		e = new GraphAdjacencyEdge(cycle.getGraph().findNode(vertex_a), cycle.getGraph().findNode(vertex_b));
+
+        GraphAdjacencyEdge e = new GraphAdjacencyEdge(cycle.getGraph().findNode(vertex_a), cycle.getGraph().findNode(vertex_b));
 		e.setId(new Long(_edge_count++));
 		// and add it to the edge pool
 		_edge_pool.add(e);

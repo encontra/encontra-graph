@@ -1,15 +1,12 @@
 package pt.inevo.encontra.graph;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Logger;
 
 @SuppressWarnings("serial")
 public class CycleSet extends ArrayList<Cycle>{
 
-	private static Logger _log=Logger.getLogger(CycleSet.class.getName());
+	private static Logger log =Logger.getLogger(CycleSet.class.getName());
 	
 	private static String userDataKey="REMOVED_VERTEXES";
 	
@@ -21,14 +18,18 @@ public class CycleSet extends ArrayList<Cycle>{
 	public CycleSet(Graph g){
 		super();
 		graph=g;
-		/*
-		GraphViewer viewer=new GraphViewer(graph);
-		viewer.setVertexDataToShow("point");
-		viewer.show();
-		*/
-		//viewer.waitUntilClosed();
-		_log.info("Simplifying graph...");
+
+
+        //graph.clone().show("Initial Graph");
+
+        log.info("Simplifying graph...");
 		Simplify(graph);
+
+        //graph.show("Simplified Graph");
+
+        log.info(String.format("Simplified graph has %d vertices and %d edges.",
+                graph.getVertexCount(),
+                graph.getEdgeCount()));
 
         /*
         GraphViewer viewer=new GraphViewer(graph);
@@ -37,12 +38,12 @@ public class CycleSet extends ArrayList<Cycle>{
 		viewer.show();*/
         
 		//viewer.waitUntilClosed();
-		_log.info("Running FloyWarshall...");
+		log.info("Running FloyWarshall...");
 		floydWarshall=new FloydWarshall();
 		floydWarshall.initialize(graph);
-		_log.info("Finding shortest paths...");
+		log.info("Finding shortest paths...");
 		floydWarshall.allPairsShortestPaths();
-		_log.info("Running Horton...");
+		log.info("Running Horton...");
 		Horton();
 		
 		UpdateToFullCycles();
@@ -65,9 +66,9 @@ public class CycleSet extends ArrayList<Cycle>{
 		while(removing){
 			removing=false;
 //			for(int i=0;i<g.getVertexCount();i++){
-			for(Iterator<GraphNode> it = g.getVertices().iterator(); it.hasNext(); ){
-//				GraphNode n=(GraphNode)g.getVerticesList().get(i);
-				GraphNode n = it.next();
+            Object[] nodes = g.getVertices().toArray();
+            for(int i=0;i<nodes.length;i++){
+				GraphNode n = (GraphNode) nodes[i];
 				List<GraphNode> adjList=n.getAdjList();
 				int nAdj=adjList.size();
 				if(nAdj==2){
@@ -83,7 +84,7 @@ public class CycleSet extends ArrayList<Cycle>{
 					int nAdj1=adjList1.size();
 					connected=false;
 					for(int a=0;a<nAdj1;a++){
-						if(adjList1.get(a)==other2) {
+						if(adjList1.get(a).equals(other2)) {
 							connected=true;
 						}
 					}
@@ -112,7 +113,7 @@ public class CycleSet extends ArrayList<Cycle>{
 					if(data1!=null){
 						ArrayList<Long> arr_data1=(ArrayList<Long>)data1;
 						// other1 is at the end - lets reverse this data
-						if(arr_data1.get(arr_data1.size() - 1) ==other1.getId()){
+						if(arr_data1.get(arr_data1.size() - 1).equals(other1.getId())){
 							Collections.reverse(arr_data1);
 						}
 						arr_data1.remove(arr_data1.size()-1); // remove last one - should = n
@@ -128,7 +129,7 @@ public class CycleSet extends ArrayList<Cycle>{
 						ArrayList<Long> arr_data2=(ArrayList<Long>)data2;
 				
 						// other2 is at the end - lets reverse this data
-						if( arr_data2.get(0).intValue()==other2.getId()){
+						if( arr_data2.get(0).equals(other2.getId())){
 							Collections.reverse(arr_data2);
 						}
 						arr_data2.remove(0); // remove first one - should = n
@@ -181,7 +182,7 @@ public class CycleSet extends ArrayList<Cycle>{
 					Object data=edge.getUserDatum(userDataKey);
 					if(data!=null) {
 						ArrayList<Long> removedVertexes=(ArrayList<Long>) data;
-						if(removedVertexes.get(0)!=startId) {// We've got this in reverse order
+						if(!removedVertexes.get(0).equals(startId)) {// We've got this in reverse order
 							Collections.reverse(removedVertexes);
 						}
 						for(int i=1;i<removedVertexes.size()-1;i++){ 
@@ -274,7 +275,7 @@ public class CycleSet extends ArrayList<Cycle>{
 		int v_index=floydWarshall.nodes.indexOf(v);
 		
 		// checks if both path start at 'v'
-		if (item_vx.getId() != v.getId() || item_vy.getId() != v.getId())
+		if (!(item_vx.getId().equals(v.getId())) || !(item_vy.getId().equals(v.getId())))
 			return false;
 
 		// checks if a cycle only contains vertices that precede v 
@@ -303,16 +304,16 @@ public class CycleSet extends ArrayList<Cycle>{
 			item_p1 = p1.get(i).getId();
 
 			// checks if v exists in p1
-			v_exists_in_p1 |= (item_p1 == v);
+			v_exists_in_p1 |= (item_p1.equals(v));
 			
 			for (j=0; j<p2.size();j++) {
 				item_p2 = p2.get(j).getId();
 			
-				if (item_p1 == item_p2 && item_p1 != v)
+				if (item_p1.equals(item_p2) && !item_p1.equals(v))
 					return false;
 
 				// checks if v exists in p2
-				v_exists_in_p2 |= (item_p2 == v);
+				v_exists_in_p2 |= (item_p2.equals(v));
 			}
 		}
 				
@@ -335,7 +336,7 @@ public class CycleSet extends ArrayList<Cycle>{
 
 		incidence_matrix.CreateMatrix();
 
-		_log.info("Selecting independent cycles...");
+		log.info("Selecting independent cycles...");
 		for (c=0; c<size();)  {		
 			independent_cycle = incidence_matrix.IndependentCycle(get(c));
 			
@@ -345,7 +346,7 @@ public class CycleSet extends ArrayList<Cycle>{
 			else 
 				c++;
 		}
-		_log.info("...independent cycles selected!");
+		log.info("...independent cycles selected!");
 		return;
 
 	}

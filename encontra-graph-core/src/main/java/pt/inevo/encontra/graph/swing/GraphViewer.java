@@ -23,6 +23,7 @@ import java.util.logging.Logger;
 
 public class GraphViewer {
 
+    private final String title;
     protected Graph graph;
     protected JFrame frame;
     protected Logger log = Logger.getLogger(GraphViewer.class.toString());
@@ -64,7 +65,7 @@ public class GraphViewer {
         graphMouse.setMode(ModalGraphMouse.Mode.TRANSFORMING);
 
         // Create a new JFrame.
-        frame = new JFrame("Graph Viewer");
+        frame = new JFrame(title);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         Container content = frame.getContentPane();
@@ -87,8 +88,9 @@ public class GraphViewer {
         frame.setSize(width, height);
     }
 
-    public GraphViewer(Graph graph) {
+    public GraphViewer(Graph graph, String title) {
         this.graph = graph;
+        this.title = title;
         initialize();
         log.log(Level.INFO, "Graph viewer initialized for graph: " + graph.toString());
     }

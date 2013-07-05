@@ -5,15 +5,12 @@ import cern.colt.matrix.DoubleFactory2D;
 import cern.colt.matrix.DoubleMatrix1D;
 import cern.colt.matrix.DoubleMatrix2D;
 import cern.colt.matrix.linalg.EigenvalueDecomposition;
-import edu.uci.ics.jung.graph.SparseGraph;
+import edu.uci.ics.jung.graph.OrderedSparseMultigraph;
 import pt.inevo.encontra.common.distance.HasDistance;
+import pt.inevo.encontra.graph.swing.GraphViewer;
 import pt.inevo.encontra.storage.IEntity;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -22,7 +19,7 @@ import java.util.logging.Logger;
  * @param <V> the type of the graph node, must extend the GraphNode class
  * @param <E> the type of the graph edge, must extend the GraphEdge class
  */
-public class Graph<V extends GraphNode, E extends GraphEdge> extends SparseGraph<V, E> implements IEntity<Long> {
+public class Graph<V extends GraphNode, E extends GraphEdge> extends OrderedSparseMultigraph<V, E> implements IEntity<Long> {
 
     /**
      * Used to divide the descriptor-entries by to make sure none of the entries is > 1.
@@ -31,7 +28,6 @@ public class Graph<V extends GraphNode, E extends GraphEdge> extends SparseGraph
     private static float MAXVAL = 250;
     private static int MIN_NODES = 2;    //!< We don't compute descriptors for subgraphs with less then MIN_NODES
     protected static Logger log = Logger.getLogger(Graph.class.toString());
-    protected ArrayList<V> nodes = new ArrayList<V>();
 
     private long id;
 
@@ -44,34 +40,6 @@ public class Graph<V extends GraphNode, E extends GraphEdge> extends SparseGraph
         log.log(Level.INFO, "Graph with id " + id + " created.");
     }
 
-    public V createNode(Long id) {
-        return createNode(id, null);
-    }
-
-    public V createNode(Long id, V p) {
-        V n1 = null;
-
-        // Make sure there is no Node with the given id
-        if ((n1 = findNode(id)) == null) {
-            n1.setId(id);
-            n1.setData(p);
-
-            addVertex(n1);
-            n1.setGraph(this);
-        }
-
-        return n1;
-    }
-
-    /**
-     * Gets the Graph Vertices ordered by the insertion.
-     * @return a collection of the graph vertices
-     */
-    @Override
-    public Collection<V> getVertices() {
-        return nodes;
-    }
-
     /**
      * Adds a vertex to the Graph.
      * @param node the vertex to be added
@@ -80,9 +48,9 @@ public class Graph<V extends GraphNode, E extends GraphEdge> extends SparseGraph
     @Override
     public boolean addVertex(V node) {
         boolean result = super.addVertex(node);
-        nodes.add(node);
+        //nodes.add(node);
         node.setGraph(this);
-//        log.log(Level.INFO, "Vertex with id " + node.getId() + " added? Value = " + result);
+        //log.log(Level.INFO, "Vertex with id " + node.getId() + " added Value = " + result);
         return result;
     }
 
@@ -229,7 +197,7 @@ public class Graph<V extends GraphNode, E extends GraphEdge> extends SparseGraph
     List<GraphNode> findSubGraph(int subGraphRootId, List<List<GraphNode>> subgraphs) {
         int i;
         for (i = 0; i < subgraphs.size(); i++) {
-            if (subgraphs.get(i).get(0).getId() == subGraphRootId) {
+            if (subgraphs.get(i).get(0).getId().equals(subGraphRootId)) {
                 break;
             }
         }
@@ -254,14 +222,13 @@ public class Graph<V extends GraphNode, E extends GraphEdge> extends SparseGraph
      * @return Returns the index of the Node with nodeId if the Node
      *         is found, -1 otherwise.
      */
-    V findNode(List<V> list, Long nodeId) {
+    V findNode(Collection<V> list, Long nodeId) {
         log.log(Level.INFO, "[++] findNode: looking for node " + nodeId );
+        for (V node : list) {
 
-        for (int i = 0; i < list.size(); i++) {
-
-            if (list.get(i).getId() == nodeId) {
+            if (node.getId().equals(nodeId) ) {
                 log.log(Level.INFO, "[++] findNode: found node!");
-                return list.get(i);
+                return node;
             }
         }
 
@@ -274,8 +241,8 @@ public class Graph<V extends GraphNode, E extends GraphEdge> extends SparseGraph
      * @param nodeId the vertex id
      * @return the vertex if it was found, or null otherwise
      */
-    public V findNode(Long nodeId) {
-        return findNode(new ArrayList(getVertices()), nodeId); // TODO - Should we use adjacency list byu default ?!
+     public V findNode(Long nodeId) {
+        return findNode(getVertices(), nodeId); // TODO - Should we use adjacency list byu default ?!
     }
 
 
@@ -619,30 +586,36 @@ public class Graph<V extends GraphNode, E extends GraphEdge> extends SparseGraph
      */
     @Override
     public Graph clone() {
-        Graph newGraph = null;
-        try {
-            newGraph = (Graph) super.clone();
-        } catch (CloneNotSupportedException e) {
-            throw new RuntimeException("Couldn't copy the Graph");
+        Graph newGraph = new Graph<V, E>(id);
+
+        for (V v : getVertices()) {
+            newGraph.addVertex(v.clone());
         }
 
-        // Clear the old list!
-        Iterator it = newGraph.getVertices().iterator();
-        for (; it.hasNext(); ) {
-            V vertex = (V) it.next();
-            newGraph.removeVertex(vertex);
-        }
+        for (E e : getEdges()) {
 
-        it = getVertices().iterator();
-        for (; it.hasNext(); ) {
-            GraphNode n = (GraphNode) it.next();
-            for (Object o : newGraph.getVertices()) {
-                if (((GraphNode) o).getId() == n.getId()) {
-                    newGraph.addVertex((V) o);
-                }
+            GraphEdge edge = e.clone();
+            edge.setSource(newGraph.findNode(edge.getSource().getId()));
+            edge.setDest(newGraph.findNode(edge.getDest().getId()));
+
+            Collection<V> original = getIncidentVertices(e);
+            Collection<GraphNode> copies = new ArrayList<GraphNode>();
+            for (V v : original) {
+                copies.add(newGraph.findNode(v.getId()));
             }
+            newGraph.addEdge(e.clone(), copies);
         }
 
         return newGraph;
+    }
+
+    public void show() {
+        show("Graph");
+    }
+
+    public void show(String title) {
+        GraphViewer viewer=new GraphViewer(this, title);
+        //viewer.setVertexDataToShow("point");
+        viewer.show();
     }
 }
