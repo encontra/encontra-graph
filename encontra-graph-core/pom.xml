@@ -27,6 +27,10 @@
             <groupId>net.sf.jung</groupId>
             <artifactId>jung-visualization</artifactId>
         </dependency>
+        <dependency>
+            <groupId>pt.inevo.encontra</groupId>
+            <artifactId>encontra-core-api</artifactId>
+        </dependency>
     </dependencies>
 
 </project>
